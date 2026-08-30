@@ -8,7 +8,7 @@ Nib is a programming language for generative art. A program describes a picture,
 picture is a pure function of the source text and a seed — nothing else. Sketches export
 to clean SVG, ready for a screen, a print, or a pen plotter.
 
-[**Open the editor →**](https://nib-lang.pages.dev)
+[**Open the editor →**](https://nib-rosy.vercel.app)
 
 </div>
 

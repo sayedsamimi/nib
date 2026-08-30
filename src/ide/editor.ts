@@ -16,6 +16,7 @@ export class Editor {
   private charW = 7;
   private marks: EditorMark[] = [];
   private raf = 0;
+  private rafFallback = 0;
 
   constructor(root: {
     ta: HTMLTextAreaElement; hl: HTMLElement; gutter: HTMLElement; squiggles: HTMLElement;
@@ -67,14 +68,24 @@ export class Editor {
 
   paint() {
     if (this.raf) cancelAnimationFrame(this.raf);
-    this.raf = requestAnimationFrame(() => {
+    clearTimeout(this.rafFallback);
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      cancelAnimationFrame(this.raf);
+      clearTimeout(this.rafFallback);
       this.raf = 0;
       // trailing newline keeps the last line's height stable in the <pre>
       this.hl.innerHTML = highlight(this.ta.value + '\n', this.known);
       this.paintGutter();
       this.paintSquiggles();
       this.syncScroll();
-    });
+    };
+    // rAF coalesces keystrokes; the timer guarantees the highlight still appears
+    // if rAF is paused (a background tab, a collapsed pane, a reduced-motion host).
+    this.raf = requestAnimationFrame(go);
+    this.rafFallback = window.setTimeout(go, 80);
   }
 
   private syncScroll() {

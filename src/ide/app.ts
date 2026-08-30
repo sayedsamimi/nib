@@ -73,7 +73,11 @@ function draw(scene: Scene) {
   const canvas = $<HTMLCanvasElement>('canvas');
   const stage = $('stage');
   const box = stage.getBoundingClientRect();
-  const scale = Math.min(1.5, fitScale(scene, box.width - 44, box.height - 44));
+  // A collapsed or not-yet-laid-out stage must not produce a degenerate canvas:
+  // clamp the box, then clamp the scale, so the backing store stays sane either way.
+  const bw = Math.max(120, box.width - 44);
+  const bh = Math.max(120, box.height - 44);
+  const scale = Math.min(1.5, Math.max(0.02, fitScale(scene, bw, bh) || 0.02));
   const paper = $('paper');
   paper.style.background = scene.background ? scene.background.css() : 'transparent';
   renderToCanvas(scene, canvas, { scale, dpr: Math.min(2, window.devicePixelRatio || 1) });
@@ -214,7 +218,7 @@ function exportSvg(plotter = false) {
   if (!lastResult) return;
   const svg = toSvg(lastResult.scene, {
     title: state.name,
-    metadata: { generator: 'Nib 0.1', seed: String(state.seed), source: 'https://nib.wtf' },
+    metadata: { generator: 'Nib 0.1', seed: String(state.seed), source: "https://nib-rosy.vercel.app" },
     ...(plotter ? { mmPerUnit: 297 / Math.max(lastResult.scene.width, lastResult.scene.height) } : {}),
   });
   return svg;
