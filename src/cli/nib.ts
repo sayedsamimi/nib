@@ -9,7 +9,7 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { basename, extname, join, dirname } from 'node:path';
-import { runSource, toSvg } from '../lang/nib.js';
+import { runSource, toSvg, DEFAULT_LIMITS } from '../lang/nib.js';
 
 const HELP = `nib — a small language for drawing
 
@@ -22,6 +22,7 @@ Options
   -p, --param k=v        override a param (repeatable)
       --mm <n>           emit millimetre units for plotters (n = long edge in mm)
       --precision <n>    coordinate decimal places (default 3)
+      --ms <n>           time limit per sketch in ms (default 30000)
       --stdout           write the SVG to stdout instead of a file
       --quiet            no progress output
   -h, --help             this
@@ -30,11 +31,11 @@ Options
 
 interface Opts {
   file: string; out: string | null; seeds: string[]; params: Record<string, string>;
-  mm: number | null; precision: number; stdout: boolean; quiet: boolean;
+  mm: number | null; precision: number; stdout: boolean; quiet: boolean; ms: number;
 }
 
 function parseArgs(argv: string[]): Opts | null {
-  const o: Opts = { file: '', out: null, seeds: ['1'], params: {}, mm: null, precision: 3, stdout: false, quiet: false };
+  const o: Opts = { file: '', out: null, seeds: ['1'], params: {}, mm: null, precision: 3, stdout: false, quiet: false, ms: 30_000 };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -45,6 +46,7 @@ function parseArgs(argv: string[]): Opts | null {
     else if (a === '-p' || a === '--param') { const [k, ...v] = next().split('='); o.params[k] = v.join('='); }
     else if (a === '--mm') o.mm = Number(next());
     else if (a === '--precision') o.precision = Number(next());
+    else if (a === '--ms') o.ms = Math.max(1, Number(next()));
     else if (a === '--stdout') o.stdout = true;
     else if (a === '--quiet') o.quiet = true;
     else if (a.startsWith('-') && a !== '-') die(`unknown option: ${a}`);
@@ -93,7 +95,9 @@ function main(o: Opts) {
   let failed = 0;
   for (const seed of o.seeds) {
     const t0 = performance.now();
-    const res = runSource(src, { seed, params });
+    // A headless renderer has no interactive deadline, so it is far more generous
+    // with time than the editor. The caps that bound memory are unchanged.
+    const res = runSource(src, { seed, params, limits: { ...DEFAULT_LIMITS, ms: o.ms } });
     const ms = performance.now() - t0;
 
     for (const d of res.diags) {
