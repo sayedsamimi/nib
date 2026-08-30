@@ -30,5 +30,7 @@ export class NibParseError extends NibError { constructor(m: string, s?: Span, h
 export class NibRuntimeError extends NibError { constructor(m: string, s?: Span, h?: string) { super(m, s, h); this.name = 'NibRuntimeError'; } }
 export class NibBudgetError extends NibError {
   budget: string;
-  constructor(budget: string, m: string, s?: Span) { super(m, s); this.name = 'NibBudgetError'; this.budget = budget; }
+  constructor(budget: string, m: string, s?: Span, hint?: string) {
+    super(m, s, hint); this.name = 'NibBudgetError'; this.budget = budget;
+  }
 }

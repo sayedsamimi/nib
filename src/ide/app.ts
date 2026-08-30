@@ -1,5 +1,5 @@
 import {
-  runSource, defaultRegistry, renderToCanvas, fitScale, toSvg,
+  runSource, defaultRegistry, renderToCanvas, fitScale, toSvg, DEFAULT_LIMITS,
   type RunResult, type ResolvedParam, type Diag, type Scene,
 } from '../lang/nib.js';
 import { Editor, KEYWORDS } from './editor.js';
@@ -20,6 +20,11 @@ const KNOWN = { keywords: KEYWORDS, commands, fns };
 // ---------------------------------------------------------------- state
 interface State { src: string; seed: string; params: Record<string, unknown>; name: string }
 const state: State = { src: '', seed: '1', params: {}, name: 'untitled' };
+
+/** The editor gives a sketch longer than the library default. The time limit is a
+ *  UX choice — Nib has no I/O, so a slow program can only be slow — while the caps
+ *  that actually bound memory (shapes, points, list length, call depth) are unchanged. */
+const EDITOR_LIMITS = { ...DEFAULT_LIMITS, ms: 8000 };
 let lastResult: RunResult | null = null;
 let loadedSource = '';
 
@@ -56,7 +61,7 @@ function execute() {
   afterPaint(() => {
     if (gen !== generation) return;
     const t0 = performance.now();
-    const res = runSource(state.src, { seed: state.seed, params: state.params });
+    const res = runSource(state.src, { seed: state.seed, params: state.params, limits: EDITOR_LIMITS });
     const ms = performance.now() - t0;
     lastResult = res;
 

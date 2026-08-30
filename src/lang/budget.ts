@@ -31,7 +31,11 @@ export class Budget {
     if (this.steps > this.limits.steps) throw new NibBudgetError('steps', `too much work: exceeded ${this.limits.steps.toLocaleString()} evaluation steps`, span);
     if (this.steps >= this.nextCheck) {
       this.nextCheck = this.steps + 4096;
-      if (this.now() - this.t0 > this.limits.ms) throw new NibBudgetError('ms', `took longer than ${this.limits.ms}ms`, span);
+      if (this.now() - this.t0 > this.limits.ms) {
+        throw new NibBudgetError('ms',
+          `this sketch needs more than ${(this.limits.ms / 1000).toFixed(1)}s to draw`, span,
+          'turn down whatever controls the count — fewer lines, fewer points, fewer octaves');
+      }
     }
   }
   shape(pts: number, span?: Span) {
