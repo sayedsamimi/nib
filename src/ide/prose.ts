@@ -27,7 +27,9 @@ reshuffles every mark that comes after it — you change a detail and lose the w
 composition. In Nib each call site draws from its own stream, keyed by where it sits in
 the source and which loop iterations enclose it. Add a <code>rand()</code> in one branch
 and the rest of the drawing does not move. Delete a shape and its neighbours stay put.
-You can edit a sketch the way you would edit a sentence.</p>
+You can edit a sketch the way you would edit a sentence. The panel below runs the same
+edit under both policies, so you can see the difference rather than take my word for
+it.</p>
 
 <p><code>group { … }</code> saves the transform and style and restores them on the way
 out. Transforms compose in the order you write them, and coordinates are baked at the

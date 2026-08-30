@@ -64,6 +64,20 @@ enclose it. So:
 That one decision changes how it feels to work. You can edit a sketch the way you edit a
 sentence.
 
+The claim is testable, so it is tested. `runSource` takes an `rngMode` option:
+`'tree'` is Nib, `'stream'` reproduces the usual global sequence. Running the identical
+one-line edit under both:
+
+| | marks that moved |
+|---|---|
+| Nib — a tree | **0 of 140** |
+| one global stream | **138 of 140** |
+
+Reformatting, adding comments, and renaming a binding move nothing either. Reordering
+whole statements does — the language is honest about that rather than pretending
+otherwise. See [`test/thesis.test.mjs`](test/thesis.test.mjs), and the interactive
+version in the editor's reference panel (<kbd>⌘K</kbd>).
+
 Everything else follows from taking determinism seriously: no wall clock, no
 `Math.random`, no platform-dependent iteration order. The same source and seed produce
 byte-identical SVG on any machine, forever.
@@ -100,7 +114,8 @@ repeat count as i, t {             # t runs 0 -> 1
 - **Budgets are hard.** Steps, milliseconds, shapes, points, recursion depth — every
   program terminates, which makes it safe to run someone else's sketch.
 
-Full specification: [SPEC.md](SPEC.md).
+Full specification: [SPEC.md](SPEC.md) · standard library:
+[docs/reference.md](docs/reference.md) · every sketch: [docs/examples.md](docs/examples.md).
 
 ## The command line
 
@@ -150,7 +165,8 @@ compiles to a single file.
 | `src/lang/lib/` | the standard library: core, colour, geometry |
 | `src/render/canvas.ts` | fast preview |
 | `src/render/svg.ts` | archival output — tidy, compact, plotter-ready |
-| `src/ide/` | the editor: highlighter, controls, permalinks |
+| `src/lang/sites.ts` | structural identity for call sites — the pass the whole idea rests on |
+| `src/ide/` | the editor: highlighter, controls, permalinks, the demo |
 
 ## License
 

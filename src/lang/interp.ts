@@ -194,6 +194,19 @@ export interface RunOptions {
   registry?: Registry;
   /** Clock for the wall-clock budget. Injectable so tests stay deterministic. */
   now?: () => number;
+  /**
+   * How random draws are keyed.
+   *
+   * `'tree'` (the default, and the whole point of the language) gives every call
+   * site its own stream, keyed by its structural position and the enclosing loop
+   * iterations, so an edit in one branch cannot disturb another.
+   *
+   * `'stream'` reproduces what almost every other creative-coding tool does: one
+   * global sequence, so inserting a single call shifts every value after it. It
+   * exists so the difference can be *shown* rather than asserted — the editor's
+   * reference panel runs the same sketch both ways side by side.
+   */
+  rngMode?: 'tree' | 'stream';
 }
 
 export interface ResolvedParam {
@@ -425,6 +438,9 @@ export class Interp implements Host {
   private hasDrawn = false;
   private suppressedDiags = 0;
   private failed = false;
+  /** See RunOptions.rngMode. 'stream' exists only to demonstrate what Nib avoids. */
+  private rngMode: 'tree' | 'stream' = 'tree';
+  private streamDraws = 0;
 
   constructor(program: Program, opts: RunOptions = {}) {
     this.program = program;
@@ -443,6 +459,7 @@ export class Interp implements Host {
     this.baseWidth = opts.width && opts.width > 0 ? opts.width : DEFAULT_SIZE;
     this.baseHeight = opts.height && opts.height > 0 ? opts.height : DEFAULT_SIZE;
     this.baseSeed = opts.seed ?? 0;
+    this.rngMode = opts.rngMode === 'stream' ? 'stream' : 'tree';
     this.width = this.baseWidth;
     this.height = this.baseHeight;
     this.setSeedValue(this.baseSeed);
@@ -510,6 +527,7 @@ export class Interp implements Host {
     this.drawCount.clear();
     this.siteCount.clear();
     this.callCount.clear();
+    this.streamDraws = 0;
     this.streamCount.clear();
     this.builder = null;
     this.background = null;
@@ -759,6 +777,14 @@ export class Interp implements Host {
 
   /** A uniform double in [0, 1) for random call site `site` on the current path. */
   rngAt(site: number): number {
+    if (this.rngMode === 'stream') {
+      // One global sequence, ignoring both site and path — the behaviour Nib exists
+      // to avoid, kept so the reference panel can demonstrate the difference.
+      const c = this.streamDraws++;
+      return splitmix01(
+        hash32((this.seedHi ^ Math.imul(c + 1, 0x9e3779b1)) >>> 0),
+        hash32((this.seedLo ^ Math.imul(c + 1, 0x85ebca6b)) >>> 0));
+    }
     const n = this.pathHi.length - 1;
     const s = (site | 0) + 1;
     const kl = hash32((this.seedLo ^ Math.imul(s, 0x9e3779b1) ^ this.pathLo[n]) >>> 0);

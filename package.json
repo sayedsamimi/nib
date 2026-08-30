@@ -10,7 +10,8 @@
   "scripts": {
     "build": "node build.mjs",
     "dev": "node build.mjs --watch",
-    "test": "node --test \"test/**/*.test.mjs\""
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "docs": "node tools/gen-reference.mjs"
   },
   "keywords": [
     "generative-art",

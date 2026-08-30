@@ -6,6 +6,7 @@ import { Editor, KEYWORDS } from './editor.js';
 import { encodeState, decodeState, readHash } from './share.js';
 import { EXAMPLES } from './examples.gen.js';
 import { PROSE } from './prose.js';
+import { buildDemo } from './demo.js';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const reg = defaultRegistry();
@@ -334,7 +335,7 @@ function buildDocs() {
     const ia = ORDER.indexOf(a), ib = ORDER.indexOf(b);
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
   });
-  let html = `<div class="prose">${PROSE}</div>`;
+  let html = `<div class="prose">${PROSE}</div><div id="demo-host"></div>`;
   for (const k of keys) {
     html += `<h3>${escapeHtml(k)}</h3>`;
     for (const e of groups.get(k)!) {
@@ -346,6 +347,7 @@ function buildDocs() {
     }
   }
   $('docs').innerHTML = html;
+  try { buildDemo($('demo-host')); } catch { /* the reference must open even if the demo cannot */ }
   $('docs').addEventListener('click', e => {
     const ex = (e.target as HTMLElement).closest('.ex');
     if (ex) navigator.clipboard.writeText(ex.textContent ?? '').then(() => toast('Copied'));
@@ -363,8 +365,10 @@ $<HTMLInputElement>('docsearch').oninput = e => {
     while (el && el.tagName !== 'H3') { if (el.style.display !== 'none') { any = true; break; } el = el.nextElementSibling as HTMLElement | null; }
     h.style.display = any ? '' : 'none';
   });
-  const prose = docs.querySelector<HTMLElement>('.prose');
-  if (prose) prose.style.display = q ? 'none' : '';
+  for (const sel of ['.prose', '#demo-host']) {
+    const el = docs.querySelector<HTMLElement>(sel);
+    if (el) el.style.display = q ? 'none' : '';
+  }
 };
 
 // ---------------------------------------------------------------- theme & split
