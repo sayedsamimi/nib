@@ -442,7 +442,31 @@ function saveDraft() {
   try { localStorage.setItem(draftKey, JSON.stringify({ ...state })); } catch { }
 }
 
+/** A cold JIT makes the very first render several times slower than every one after
+ *  it — and the first render is the one a visitor actually waits for. Thirty
+ *  milliseconds of throwaway work through the same hot paths pays for itself. */
+function warmUp() {
+  try {
+    runSource(
+      'size 64,64\n' +
+      'fn f(p) { fbm(p.x * 0.02, p.y * 0.02, 4) }\n' +
+      'repeat 900 as i, t {\n' +
+      '  group {\n' +
+      '    stroke hsl(t * 300, 0.5, 0.5), 1\n' +
+      '    translate [32, 32]\n' +
+      '    rotate t * TAU\n' +
+      '    var p = [rand(64), rand(64)]\n' +
+      '    p = p + [f(p), noise(t * 3)]\n' +
+      '    line p, p + [2, 2]\n' +
+      '    circle p, 1\n' +
+      '  }\n' +
+      '}',
+      { seed: 'warm' });
+  } catch { /* warming is best-effort and must never block the app */ }
+}
+
 async function boot() {
+  warmUp();
   const frag = readHash();
   if (frag) {
     const s = await decodeState(frag);
