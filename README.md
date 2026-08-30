@@ -71,7 +71,7 @@ one-line edit under both:
 | | marks that moved |
 |---|---|
 | Nib — a tree | **0 of 140** |
-| one global stream | **138 of 140** |
+| one global stream | **140 of 140** |
 
 Reformatting, adding comments, and renaming a binding move nothing either. Reordering
 whole statements does — the language is honest about that rather than pretending

@@ -8,7 +8,10 @@ mkdirSync(DIST, { recursive: true });
 
 /** Inline every example .nib file into a module so the app ships self-contained. */
 /** Deliberate order: the first one is what a visitor sees before they read a word. */
-const ORDER = ['meridian', 'filings', 'sediment', 'orrery', 'tide', 'anemone', 'foxglove',
+/* Foxglove leads because it is both the most immediate and one of the cheapest
+   (~18ms): the very first render happens before V8 has optimised the interpreter,
+   so the sketch that greets a visitor should not be the heaviest one. */
+const ORDER = ['foxglove', 'meridian', 'tide', 'filings', 'sediment', 'orrery', 'anemone',
                'lattice', 'bloom', 'constellation', 'moire', 'ripple', 'static'];
 function bundleExamples() {
   let files = [];
