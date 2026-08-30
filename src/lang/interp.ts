@@ -1528,6 +1528,7 @@ export class Interp implements Host {
         span, def?.doc?.sig);
     }
     this.budget.enter(span);
+    const prevSpan = this.ctxSpan, prevSite = this.ctxSite;
     try {
       const r = fn.native!(args, this.makeCtx(span, site, this.state));
       return r === undefined ? null : r;
@@ -1535,6 +1536,9 @@ export class Interp implements Host {
       if (e instanceof NibError && !e.stack2 && this.frames.length) e.stack2 = this.frames.slice().reverse();
       throw e;
     } finally {
+      // A native may have called back into the interpreter, which re-points the
+      // shared context; put it back so an outer native still sees its own site.
+      this.ctxSpan = prevSpan; this.ctxSite = prevSite;
       this.budget.exit();
     }
   }
@@ -1638,23 +1642,41 @@ export class Interp implements Host {
     }
   }
 
-  private makeCtx(span: Span, site: number, state: DrawState): DrawCtx {
+  /**
+   * The context handed to natives.
+   *
+   * This used to allocate a fresh object holding ten closures on *every* native call,
+   * and a sketch makes millions of them — it was the largest single source of GC
+   * pressure in the interpreter. One object is built per run instead, reading the
+   * current span and site through getters; `callNative` saves and restores those two
+   * fields around each call, so a native that calls back into the interpreter still
+   * finds its own site on the way out.
+   */
+  private sharedCtx: DrawCtx | null = null;
+  private ctxSpan: Span = { line: 1, col: 1, endLine: 1, endCol: 1, start: 0, end: 0 };
+  private ctxSite = 0;
+
+  private makeCtx(span: Span, site: number, _state: DrawState): DrawCtx {
+    this.ctxSpan = span;
+    this.ctxSite = site;
+    if (this.sharedCtx) return this.sharedCtx;
     const self = this;
-    return {
-      span,
-      site,
-      rng: () => self.rngAt(site),
+    this.sharedCtx = {
+      get span() { return self.ctxSpan; },
+      get site() { return self.ctxSite; },
+      rng: () => self.rngAt(self.ctxSite),
       noise: (x: number, y: number, z: number) => self.noise3(x, y, z),
-      seedHash: self.seed32,
-      state,
-      emit: (s: Shape) => self.emitWith(s, state, span),
-      width: self.width,
-      height: self.height,
-      step: (n = 1) => self.budget.step(n, span),
-      err: (msg: string, hint?: string): never => self.err(msg, span, hint),
-      call: (fn: NibFn, args: Value[]) => self.callValue(fn, args, null, span, site),
+      get seedHash() { return self.seed32; },
+      get state() { return self.state; },
+      emit: (sh: Shape) => self.emitWith(sh, self.state, self.ctxSpan),
+      get width() { return self.width; },
+      get height() { return self.height; },
+      step: (n = 1) => self.budget.step(n, self.ctxSpan),
+      err: (msg: string, hint?: string): never => self.err(msg, self.ctxSpan, hint),
+      call: (fn: NibFn, args: Value[]) => self.callValue(fn, args, null, self.ctxSpan, self.ctxSite),
       host: self,
-    };
+    } as DrawCtx;
+    return this.sharedCtx;
   }
 
   private needNum(v: Value, span: Span, what: string): number {

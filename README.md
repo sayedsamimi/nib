@@ -102,23 +102,25 @@ repeat count as i, t {             # t runs 0 -> 1
 
 Full specification: [SPEC.md](SPEC.md).
 
-## Install
+## The command line
+
+`dist/cli.js` is a standalone renderer — useful for batches, for plotting, and for
+putting a sketch in a build pipeline.
 
 ```bash
-npm install -g nib-lang
+node dist/cli.js sketch.nib                      # -> sketch.svg
+node dist/cli.js sketch.nib --seed 1..24 -o out/ # a contact sheet of 24 seeds
+node dist/cli.js sketch.nib --mm 297 -o a3.svg   # millimetre units for a plotter
+node dist/cli.js sketch.nib -p count=300 --stdout
 ```
 
-```bash
-nib sketch.nib                      # -> sketch.svg
-nib sketch.nib --seed 1..24 -o out/ # a contact sheet of 24 seeds
-nib sketch.nib --mm 297 -o a3.svg   # millimetre units for a plotter
-nib sketch.nib -p count=300 --stdout | pbcopy
-```
+The package is set up to publish as `nib-lang` (`npm i -g nib-lang` then just `nib`),
+but it is not on the registry yet — build it from source for now.
 
 Or embed it:
 
 ```js
-import { runSource, toSvg } from 'nib-lang';
+import { runSource, toSvg } from './dist/nib.js';
 
 const { scene, ok, diags } = runSource(source, { seed: 'moss' });
 if (ok) console.log(toSvg(scene, { precision: 2 }));
