@@ -429,5 +429,27 @@ input[type=color]::-webkit-color-swatch { border: 0; border-radius: 2px; }
   .drag { cursor: row-resize; }
   .tagline, .seedbox label { display: none; }
   .btn { padding: 5px 8px; font-size: 11.5px; }
+
+  /* The toolbar is wider than a phone. Let it scroll rather than clipping the
+     controls on the right — Share and the theme toggle were unreachable. */
+  .bar { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; gap: 7px; padding: 0 8px; }
+  .bar::-webkit-scrollbar { display: none; }
+  .brand, .seedbox, .actions { flex: none; }
+  .spacer { min-width: 4px; }
+  .seedbox input { width: 54px; }
+  .wordmark { font-size: 18px; }
+
+  /* The canvas needs the room more than the parameter rail does. */
+  .rail { max-height: 38%; }
+  .stage { padding: 12px; }
+  .pctl { grid-template-columns: 92px 1fr 48px; }
+}
+
+/* A pointer-coarse device gets bigger hit targets on the sliders. */
+@media (pointer: coarse) {
+  input[type=range] { height: 26px; }
+  input[type=range]::-webkit-slider-thumb { width: 16px; height: 16px; margin-top: -7px; }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; }
+  .mini, .icon { padding: 6px 8px; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
