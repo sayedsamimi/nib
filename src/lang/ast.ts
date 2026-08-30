@@ -34,7 +34,7 @@ export interface Call     { kind: 'Call'; callee: Expr; args: Arg[]; span: Span;
 export interface Index    { kind: 'Index'; target: Expr; index: Expr; optional: boolean; span: Span }
 export interface Field    { kind: 'Field'; target: Expr; name: string; optional: boolean; span: Span }
 export interface Param    { name: string; default: Expr | null; span: Span }
-export interface Lambda   { kind: 'Lambda'; name: string | null; params: Param[]; rest: string | null; body: Block; span: Span }
+export interface Lambda   { kind: 'Lambda'; name: string | null; params: Param[]; rest: string | null; body: Block; span: Span; /** structural identity, assigned by sites.ts */ stableId?: number }
 export interface IfExpr   { kind: 'IfExpr'; cond: Expr; then: Block; else: Block | IfExpr | null; span: Span }
 export interface BlockExpr{ kind: 'BlockExpr'; body: Block; span: Span }
 export interface Assign   { kind: 'Assign'; target: Ident | Index | Field; op: '='|'+='|'-='|'*='|'/='; value: Expr; span: Span }

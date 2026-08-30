@@ -1,0 +1,30 @@
+# Meridian — horizontal hatching bent through a noise field
+size 900, 1200
+seed "meridian-7"
+background #0c0e12
+
+param lines   = 260  [20..500]
+param density = 1.0  [0.3..3 by 0.05]
+param drift   = 26   [0..90]
+param hue     = 196  [0..360]
+param sway    = 0.0013 [0.0003..0.006 by 0.0001] "field scale"
+
+fn field(p) { fbm(p.x * sway, p.y * sway, 5) * TAU }
+
+repeat lines as i, t {
+  group {
+    stroke hsl(hue + t * 54, 0.34 + t * 0.30, 0.44 + t * 0.38), 0.55 + abs(noise(t * 9)) * 0.75
+    opacity 0.62 + 0.34 * abs(noise(t * 6, 4))
+    cap "round"
+
+    let step = 5 / density
+    var p = [40, 50 + t * (height - 100)]
+    path {
+      move p
+      repeat floor((width - 80) / step) {
+        p = p + [step, sin(field(p)) * drift * 0.12]
+        line p
+      }
+    }
+  }
+}

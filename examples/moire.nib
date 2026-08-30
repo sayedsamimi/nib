@@ -1,0 +1,25 @@
+# Moiré — two honest grids, one dishonest result
+size 800, 800
+seed "moire"
+background #f6f3ec
+
+param rings   = 58   [8..160]
+param gap     = 7.6  [2..20 by 0.1] "ring spacing"
+param offset  = 30   [0..200]
+param spin    = 0.03 [-0.3..0.3 by 0.002]
+param weight  = 1.05 [0.1..3 by 0.05]
+
+fn system(centre, tint, turn) {
+  group {
+    translate centre
+    rotate turn
+    nofill
+    repeat rings as i, t {
+      stroke alpha(tint, 0.72 + 0.26 * (1 - t)), weight
+      circle [0, 0], 8 + i * gap
+    }
+  }
+}
+
+system([width / 2 - offset, height / 2], hex("#16181d"), 0)
+system([width / 2 + offset, height / 2], hex("#a8321f"), spin)

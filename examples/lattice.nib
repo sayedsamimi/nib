@@ -1,0 +1,38 @@
+# Lattice — recursive subdivision, biased by a noise field
+size 900, 900
+seed "lattice-11"
+background #14161c
+
+param depth   = 7    [1..9]
+param bias    = 0.55 [0..1 by 0.01]
+param inset   = 3    [0..14]
+param fillOdd = true
+
+fn cell(a, b, d) {
+  let w = b.x - a.x
+  let h = b.y - a.y
+  let mid = (a + b) * 0.5
+  let n = fbm(mid.x * 0.0022, mid.y * 0.0022, 3)
+
+  if d <= 0 or (n + 1) * 0.5 > bias + d * 0.03 or min(w, h) < 14 {
+    let t = clamp((n + 1) * 0.5, 0, 1)
+    group {
+      stroke hsl(202 - t * 168, 0.48, 0.46 + t * 0.40), 0.95
+      if fillOdd and (d % 2 == 0) { fill alpha(hsl(206 - t * 156, 0.38, 0.52), 0.14) } else { nofill }
+      rect a + [inset, inset], b - [inset, inset]
+    }
+    return nil
+  }
+
+  if w > h {
+    let s = a.x + w * (0.3 + 0.4 * fract(n * 7))
+    cell(a, [s, b.y], d - 1)
+    cell([s, a.y], b, d - 1)
+  } else {
+    let s = a.y + h * (0.3 + 0.4 * fract(n * 11))
+    cell(a, [b.x, s], d - 1)
+    cell([a.x, s], b, d - 1)
+  }
+}
+
+cell([40, 40], [width - 40, height - 40], depth)

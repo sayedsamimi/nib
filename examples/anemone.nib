@@ -1,0 +1,44 @@
+# Anemone — packed discs, each one combed outward
+size 900, 900
+seed "anemone-5"
+background #08131a
+
+param discs  = 34   [6..180]
+param minR   = 34   [8..90]
+param maxR   = 165  [40..300]
+param comb   = 54   [3..160] "hairs per disc"
+param reach  = 0.55 [0..1.2 by 0.01]
+
+let packed = packCircles(discs, minR, maxR, width - 40, height - 40)
+
+group {
+  translate [20, 20]
+  for d, i in packed {
+    let c = d[0]
+    let r = d[1]
+    let t = unlerp(minR, maxR, r)
+    let base = ramp([hex("#0e4749"), hex("#2a9d8f"), hex("#e9c46a"), hex("#e76f51")], t)
+
+    group {
+      nofill
+      stroke alpha(base, 0.5), 1.0
+      circle c, r
+
+      stroke alpha(base, 0.95), 0.85
+      cap "round"
+      let n = floor(comb * (0.5 + t))
+      repeat n as k, u {
+        let a = u * TAU + noise(c.x * 0.01, c.y * 0.01) * PI
+        let inner = r * (0.25 + 0.3 * rand())
+        let outer = r * (1 + reach * rand() * (0.3 + t))
+        path {
+          move c + polar(inner, a)
+          repeat 5 as s, v {
+            let rr = lerp(inner, outer, v)
+            line c + polar(rr, a + sin(v * PI) * 0.35 * reach)
+          }
+        }
+      }
+    }
+  }
+}

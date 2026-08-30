@@ -1,0 +1,39 @@
+# Bloom — one rule, applied to itself until it runs out of room
+size 800, 1000
+seed "bloom-2"
+background #0f1114
+
+param branches = 3    [2..5]
+param spread   = 34   [5..80] "degrees"
+param shrink   = 0.74 [0.5..0.92 by 0.01]
+param wobble   = 0.5  [0..1.5 by 0.01]
+param depth    = 7    [1..10]
+
+fn limb(p, a, len, d) {
+  if d <= 0 or len < 3 { return nil }
+  let jitterA = rand(-wobble, wobble) * 0.4
+  let q = p + polar(len, a + jitterA)
+  let t = d / depth
+
+  group {
+    stroke mix(hex("#8a5a3b"), hex("#d8e0c8"), 1 - t), 0.4 + t * 3.4
+    cap "round"
+    line p, q
+  }
+
+  if d == 1 {
+    group {
+      nostroke
+      fill alpha(mix(hex("#e8a0b8"), hex("#f2d69a"), rand()), 0.85)
+      circle q, 2 + rand(4)
+    }
+    return nil
+  }
+
+  repeat branches as i, u {
+    let off = (u - 0.5) * spread * 2 * PI / 180
+    limb(q, a + off + rand(-0.12, 0.12), len * shrink * (0.85 + rand(0.3)), d - 1)
+  }
+}
+
+limb([width / 2, height - 60], -90deg, 150, depth)

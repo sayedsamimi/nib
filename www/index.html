@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nib — a small language for drawing</title>
+<meta name="description" content="Nib is a small programming language for generative art. Deterministic, hierarchical randomness. Exports SVG for pen plotters. Write a sketch, get a drawing.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="Nib — a small language for drawing">
+<meta property="og:description" content="A programming language for generative art. Deterministic by design. Exports SVG for pen plotters.">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <a class="brand" href="./" title="Nib">
+    <svg class="nib-mark" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 1.6 20.2 9.9 12 22.4 3.8 9.9Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M12 1.6V22.4" stroke="currentColor" stroke-width="1.4"/>
+      <circle cx="12" cy="10.4" r="2.05" fill="var(--bg)" stroke="currentColor" stroke-width="1.4"/>
+    </svg>
+    <span class="wordmark">nib</span>
+  </a>
+  <span class="tagline">a small language for drawing</span>
+
+  <div class="spacer"></div>
+
+  <div class="seedbox" title="The seed. Every drawing is a pure function of source + seed.">
+    <label for="seed">seed</label>
+    <input id="seed" type="text" spellcheck="false" autocomplete="off" value="1">
+    <button id="seed-prev" class="icon" title="Previous seed (,)" aria-label="Previous seed">&#8249;</button>
+    <button id="seed-next" class="icon" title="Next seed (.)" aria-label="Next seed">&#8250;</button>
+    <button id="seed-rand" class="icon" title="Random seed (R)" aria-label="Random seed">
+      <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="5.4" cy="5.4" r="1.25" fill="currentColor"/><circle cx="10.6" cy="10.6" r="1.25" fill="currentColor"/><circle cx="10.6" cy="5.4" r="1.25" fill="currentColor"/></svg>
+    </button>
+  </div>
+
+  <nav class="actions">
+    <button id="btn-run" class="btn primary" title="Run (⌘↵)">Run</button>
+    <button id="btn-examples" class="btn" title="Examples (⌘E)">Examples</button>
+    <button id="btn-docs" class="btn" title="Reference (⌘K)">Reference</button>
+    <div class="menu-wrap">
+      <button id="btn-export" class="btn" title="Export">Export<span class="caret">▾</span></button>
+      <div class="menu" id="menu-export" hidden>
+        <button data-act="svg">Download SVG<kbd>⌘S</kbd></button>
+        <button data-act="png1">Download PNG · 1×</button>
+        <button data-act="png2">Download PNG · 2×</button>
+        <button data-act="png4">Download PNG · 4×</button>
+        <hr>
+        <button data-act="copysvg">Copy SVG to clipboard</button>
+        <button data-act="copynib">Copy source</button>
+        <hr>
+        <button data-act="plotter">Download SVG for plotter (mm)</button>
+      </div>
+    </div>
+    <button id="btn-share" class="btn" title="Copy a permalink (⌘L)">Share</button>
+    <button id="btn-theme" class="icon big" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.3"/><g stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M8 .9v1.9M8 13.2v1.9M15.1 8h-1.9M2.8 8H.9M13 3l-1.3 1.3M4.3 11.7 3 13M13 13l-1.3-1.3M4.3 4.3 3 3"/></g></svg>
+    </button>
+  </nav>
+</header>
+
+<main class="split" id="split">
+  <section class="pane pane-editor">
+    <div class="pane-head">
+      <span class="sketch-name" id="sketch-name">untitled</span>
+      <span class="dot" id="run-dot" title="idle"></span>
+      <div class="spacer"></div>
+      <button class="mini" id="btn-fmt" title="Tidy indentation">tidy</button>
+      <button class="mini" id="btn-reset" title="Revert to the loaded example">revert</button>
+    </div>
+    <div class="editor" id="editor">
+      <div class="gutter" id="gutter" aria-hidden="true"></div>
+      <div class="code">
+        <pre class="hl" id="hl" aria-hidden="true"></pre>
+        <div class="squiggles" id="squiggles" aria-hidden="true"></div>
+        <textarea id="src" spellcheck="false" autocapitalize="off" autocomplete="off"
+                  autocorrect="off" wrap="off" aria-label="Nib source code"></textarea>
+      </div>
+    </div>
+    <div class="diags" id="diags" hidden></div>
+  </section>
+
+  <div class="drag" id="drag" role="separator" aria-orientation="vertical" tabindex="0" aria-label="Resize panels"></div>
+
+  <section class="pane pane-view">
+    <div class="stage" id="stage">
+      <div class="paper" id="paper"><canvas id="canvas"></canvas></div>
+    </div>
+    <div class="rail" id="rail">
+      <div class="rail-head">
+        <span>parameters</span>
+        <button class="mini" id="btn-params-reset" title="Reset all parameters">reset</button>
+      </div>
+      <div class="rail-body" id="params">
+        <p class="rail-empty">No <code>param</code> declarations in this sketch.<br>
+          Add one — <code>param n = 40 [4..200]</code> — and a control appears here.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="status" id="status">
+  <span class="stat" id="st-size">—</span>
+  <span class="sep"></span>
+  <span class="stat" id="st-shapes">—</span>
+  <span class="sep"></span>
+  <span class="stat" id="st-time">—</span>
+  <div class="spacer"></div>
+  <span class="stat muted" id="st-msg">ready</span>
+</footer>
+
+<aside class="drawer" id="drawer-examples" hidden>
+  <div class="drawer-head">
+    <h2>Examples</h2>
+    <p>Thirteen sketches, each one a small argument for a different idea. Click one to load it.</p>
+    <button class="icon big close" data-close aria-label="Close">✕</button>
+  </div>
+  <div class="gallery" id="gallery"></div>
+</aside>
+
+<aside class="drawer wide" id="drawer-docs" hidden>
+  <div class="drawer-head">
+    <h2>Reference</h2>
+    <p>Every word in the language. <kbd>⌘K</kbd> to open, type to filter.</p>
+    <button class="icon big close" data-close aria-label="Close">✕</button>
+  </div>
+  <input class="docsearch" id="docsearch" type="search" placeholder="Filter — try “noise”, “color”, “hatch”…" spellcheck="false">
+  <div class="docs" id="docs"></div>
+</aside>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

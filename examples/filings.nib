@@ -1,0 +1,34 @@
+# Filings — iron dust finding a field it cannot see
+size 1000, 1000
+seed "filings-2"
+background #0a0a0c
+
+param count  = 2600 [200..9000]
+param length = 46   [4..120]
+param scale  = 340  [80..900] "field scale"
+param cells  = 3.2  [0.5..10 by 0.1]
+param wander = 0.35 [0..1.5 by 0.01]
+
+# One smooth, divergence-free field. Because it is smooth, neighbouring filings
+# agree with each other, and the eye reads the agreement as a flow.
+fn heading(p) {
+  let u = p / scale
+  let v = curl(u.x, u.y)
+  atan2(v.y, v.x) + fbm(u.x * 0.6, u.y * 0.6, 3) * wander
+}
+
+repeat count as i, t {
+  let p = [rand(width), rand(height)]
+  let u = p / scale
+  let w = worley(u.x * cells, u.y * cells)
+  let edge = clamp((w.y - w.x) * 1.4, 0, 1)
+  let a = heading(p)
+  let l = length * (0.45 + 0.75 * edge)
+
+  group {
+    stroke mix(hex("#e8623a"), hex("#f6f1e6"), edge), 0.55 + edge * 1.05
+    opacity 0.4 + 0.55 * edge
+    cap "round"
+    line p - polar(l / 2, a), p + polar(l / 2, a)
+  }
+}

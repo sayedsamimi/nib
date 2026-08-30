@@ -1,0 +1,45 @@
+# Orrery — every circle is a clock running at its own rate
+size 800, 800
+seed "orrery"
+background #0b0d11
+
+param rings  = 14   [3..40]
+param teeth  = 300  [20..700]
+param spread = 0.62 [0.1..1 by 0.01]
+param tilt   = 0.18 [0..1 by 0.01]
+
+let mid = [width / 2, height / 2]
+
+group {
+  translate mid
+  nofill
+
+  repeat rings as k, t {
+    let r  = 44 + t * (width * 0.44 - 44)
+    let ph = k * PHI * TAU
+    group {
+      rotate ph
+      # the orbit
+      stroke hsl(38 - t * 30, 0.30 + t * 0.24, 0.38 + t * 0.34), 0.85
+      ellipse [0, 0], r, r * (1 - tilt * t)
+
+      # the teeth
+      stroke hsl(38 - t * 30, 0.48, 0.62 + t * 0.26), 1.1
+      let n = floor(teeth * spread / (k + 2)) + 6
+      repeat n as j, u {
+        let a  = u * TAU + ph
+        let ry = r * (1 - tilt * t)
+        let inn = 1 - (if j % 4 == 0 { 0.08 } else { 0.03 })
+        line [cos(a) * r * inn, sin(a) * ry * inn], [cos(a) * r, sin(a) * ry]
+      }
+
+      # one bright body on the orbit
+      stroke #ffc48a, 1.8
+      let a = ph * 3.7
+      circle [cos(a) * r, sin(a) * r * (1 - tilt * t)], 2.4 + t * 3
+    }
+  }
+
+  stroke #f2a768, 1
+  circle [0, 0], 5
+}

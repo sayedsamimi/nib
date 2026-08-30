@@ -1,0 +1,33 @@
+# Ripple — interference between a few honest sources
+size 900, 900
+seed "ripple"
+background #f4f1ea
+
+param sources = 3    [1..9]
+param rings   = 68   [16..240]
+param wave    = 0.022 [0.004..0.1 by 0.001]
+param push    = 34   [0..160]
+
+let mid = [width / 2, height / 2]
+let src = ring(mid, 190, sources)
+
+fn height'(p) {
+  var h = 0
+  for s in src { h = h + sin(distance(p, s) * wave) }
+  h / sources
+}
+
+repeat rings as i, t {
+  let y = 40 + t * (height - 80)
+  group {
+    stroke alpha(hex("#1c1e24"), 0.3 + 0.5 * abs(sin(t * PI))), 1.0
+    nofill
+    path {
+      move [30, y]
+      repeat 120 as k, u {
+        let x = 30 + u * (width - 60)
+        line [x, y + height'([x, y]) * push]
+      }
+    }
+  }
+}

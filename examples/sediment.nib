@@ -1,0 +1,44 @@
+# Sediment — strata laid down, then faulted
+size 900, 1200
+seed "sediment-3"
+background #f1ece1
+
+param beds     = 62   [8..140]
+param grain    = 260  [20..800]
+param fault    = 0.35 [0..1 by 0.01]
+param palette' = "terracotta" ["terracotta", "rust", "moss", "ink", "dusk", "ember"]
+
+var y = 40
+repeat beds as b, t {
+  let thickness = 9 + rand(44) * (0.45 + 0.55 * abs(noise(t * 3)))
+  let c = palette(palette', fract(t * 1.7 + noise(t * 2) * 0.3))
+  let shear = (noise(t * 5, 9) * fault) * 90
+
+  group {
+    nostroke
+    fill alpha(c, 0.9)
+    # the bed itself, its lower edge roughened by noise
+    path {
+      move [0, y]
+      repeat 30 as i, u {
+        line [u * width, y + noise(u * 4, t * 8) * thickness * 0.35 + shear * u]
+      }
+      line [width, y + thickness + shear]
+      repeat 30 as i, u {
+        line [(1 - u) * width, y + thickness + noise((1 - u) * 4, t * 8 + 3) * thickness * 0.3 + shear * (1 - u)]
+      }
+      close
+    }
+
+    # grains suspended in it
+    stroke alpha(darken(c, 0.22), 0.55), 0.7
+    nofill
+    repeat floor(grain * thickness / 40) {
+      let u = rand()
+      let py = y + rand(thickness) + shear * u
+      line [u * width, py], [u * width + rand(2, 9), py]
+    }
+  }
+  y = y + thickness + 2
+  if y > height - 40 { break }
+}

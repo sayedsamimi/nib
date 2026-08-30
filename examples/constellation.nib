@@ -1,0 +1,37 @@
+# Constellation — poisson points, joined to whoever is nearest
+size 1000, 700
+seed "constellation"
+background #070a12
+
+param spacing = 40  [16..100]
+param links   = 2   [1..6] "neighbours per point"
+param glow    = 0.7 [0..1 by 0.01]
+
+let pts = poisson(width - 60, height - 60, spacing)
+
+group {
+  translate [30, 30]
+
+  # edges first, so the stars sit on top
+  stroke alpha(hex("#8aa2ff"), 0.6), 0.85
+  for p, i in pts {
+    let near = pts
+      |> map(|q| [distance(p, q), q])
+      |> filter(|d| d[0] > 0.001)
+      |> sortBy(|d| d[0])
+      |> take(links)
+    for d in near {
+      if d[0] < spacing * 2.4 { line p, d[1] }
+    }
+  }
+
+  nostroke
+  for p, i in pts {
+    let m = (noise(p.x * 0.004, p.y * 0.004) + 1) * 0.5
+    let r = 1.2 + m * 3.6
+    fill alpha(mix(hex("#dbe4ff"), hex("#ffd8a8"), m), 0.30 * glow)
+    circle p, r * 3.2
+    fill mix(hex("#dbe4ff"), hex("#ffd8a8"), m)
+    circle p, r
+  }
+}

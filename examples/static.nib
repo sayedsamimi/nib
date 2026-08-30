@@ -1,0 +1,32 @@
+# Static — a grid of marks, to show that editing one does not move the others
+size 800, 800
+seed "static"
+background #12131a
+
+param cols   = 22   [4..60]
+param jitter = 0.42 [0..1 by 0.01]
+param bend   = 0.6  [0..2 by 0.01]
+param ink    = "porcelain" ["porcelain", "ember", "tide", "moss", "nocturne", "viridis"]
+
+let step = width / cols
+
+repeat cols as row, ty {
+  repeat cols as col, tx {
+    let home = [(col + 0.5) * step, (row + 0.5) * step]
+    let n = fbm(home.x * 0.004, home.y * 0.004, 4)
+    let a = n * TAU * bend
+    let p = home + [rand(-1, 1), rand(-1, 1)] * step * jitter * 0.5
+    let l = step * (0.25 + 0.5 * abs(n))
+
+    group {
+      stroke palette(ink, clamp((n + 1) * 0.5, 0, 1)), 0.9 + abs(n) * 2.0
+      cap "round"
+      if chance(0.14) {
+        nofill
+        circle p, l * 0.4
+      } else {
+        line p - polar(l / 2, a), p + polar(l / 2, a)
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+# Tide — contour lines of an invented landscape
+size 1000, 700
+seed "tide-9"
+background #071016
+
+param levels = 30   [4..80]
+param detail = 280  [60..440] "contour grid"
+param zoom   = 2.1  [0.3..6 by 0.05]
+param warp   = 0.45 [0..1.2 by 0.01]
+param relief = 0.45 [0..1 by 0.01]
+
+# Warping the input by a second, slower noise field is what gives the valleys
+# their lean. Note that the warp is *noise* and not *curl*: curl is a derivative,
+# so it carries high frequencies that would shred the level sets into confetti.
+fn land(p) {
+  let u = p / [width, height] * zoom
+  let w = [noise(u.x * 0.6, u.y * 0.6), noise(u.x * 0.6 + 8, u.y * 0.6 + 8)] * warp
+  fbm(u.x + w.x, u.y + w.y, 5) + relief * noise(u.x * 0.45, u.y * 0.45)
+}
+
+# The field is sampled once and traced at every level — far cheaper than a loop of contours.
+let bands = contours(land, width, height, detail, levels)
+
+for band, i in bands {
+  let t = i / max(len(bands) - 1, 1)
+  let c = ramp([hex("#0b3a52"), hex("#2e8f8f"), hex("#e9d8a6"), hex("#e07a55")], t)
+  group {
+    nofill
+    # every fifth line is an index contour, as on a real map
+    if i % 5 == 0 { stroke c, 1.6; opacity 1 } else { stroke alpha(c, 0.7), 0.8 }
+    for poly in band { lines poly }
+  }
+}

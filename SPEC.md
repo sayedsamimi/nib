@@ -23,7 +23,8 @@ Design commitments, in priority order:
 - **Newlines are significant** as statement terminators. A newline does *not* terminate a
   statement if the line ends with an infix operator, an open delimiter `( [ {`, a comma,
   or a pipe `|>`; or if the *next* non-blank line begins with `|>`, `.`, or `else`.
-  A `;` may also terminate a statement explicitly.
+  A `;` may also terminate a statement explicitly, and a statement that ends with a
+  closing `}` terminates itself (`fn f(x) { x } f(1)` reads fine on one line).
 - **Identifiers**: `[A-Za-z_][A-Za-z0-9_]*`, plus a trailing `'` (prime) is allowed
   (`p'` reads as "p prime"). Case-sensitive.
 - **Numbers**: `123`, `1.5`, `.5`, `1e-3`, `0xff`, `1_000`. All numbers are f64.
@@ -72,7 +73,7 @@ Precedence, loosest to tightest:
 7   + -
 8   * / % //                // is floor-division
 9   ^                       exponent (right assoc)
-10  - +                     (prefix)
+9.5 - +                     (prefix; looser than ^, so -2^2 == -4, as in mathematics)
 11  call, index, field, ?.  postfix
 ```
 

@@ -1,0 +1,29 @@
+# Foxglove — phyllotaxis, and what happens when you bend the angle
+size 800, 800
+seed "foxglove"
+background #10121a
+
+param count = 1400  [50..4000]
+param angle = 137.5 [100..180 by 0.1] "divergence angle"
+param scale = 9.5   [2..20 by 0.1]
+param petal = 0.55  [0..1.4 by 0.01]
+
+let mid = [width / 2, height / 2]
+
+group {
+  translate mid
+  nostroke
+  repeat count as i, t {
+    let a = i * angle * PI / 180
+    let r = scale * sqrt(i)
+    let p = [cos(a) * r, sin(a) * r]
+    let s = 1.1 + t * 4.4
+
+    fill mix(hex("#3d5a80"), hex("#f4a261"), smoothstep(0.1, 0.95, t))
+    group {
+      translate p
+      rotate a + petal * t * TAU
+      ellipse [0, 0], s * (1 + petal), s * (1 - petal * 0.45)
+    }
+  }
+}

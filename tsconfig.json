@@ -1,11 +1,29 @@
 {
   "compilerOptions": {
-    "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler",
-    "strict": true, "noUnusedLocals": false, "noUnusedParameters": false,
-    "noImplicitOverride": true, "exactOptionalPropertyTypes": false,
-    "skipLibCheck": true, "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "isolatedModules": true, "verbatimModuleSyntax": false,
-    "noEmit": true, "allowImportingTsExtensions": false
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+    "skipLibCheck": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+    "allowImportingTsExtensions": false,
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
 }

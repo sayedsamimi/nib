@@ -45,6 +45,8 @@ export interface NativeCtx {
   rng(): number;
   /** noise, pure in (x,y,z) + seed */
   noise(x: number, y: number, z: number): number;
+  /** the run's seed, as a uint32 — for noise functions that must be seed-pure */
+  seedHash: number;
   state: DrawState;
   emit(s: Shape): void;
   width: number; height: number;
